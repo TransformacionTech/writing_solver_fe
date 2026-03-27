@@ -1,0 +1,71 @@
+<div class="ws-container">
+  <!-- Header -->
+  <div class="ws-header">
+    <div class="ws-header-info">
+      <h1>Writing Solver</h1>
+      <span class="ws-subtitle">Genera y refina posts de LinkedIn con agentes de IA</span>
+    </div>
+    <div class="ws-header-actions">
+      <button mat-stroked-button (click)="suggestTopics()" [disabled]="isProcessing()">
+        <mat-icon>lightbulb</mat-icon>
+        Sugerir temas
+      </button>
+      <button mat-stroked-button (click)="updateRag()" [disabled]="isProcessing()">
+        <mat-icon>sync</mat-icon>
+        Actualizar DB
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div class="ws-chat" #chatContainer>
+    @if (messages().length === 0) {
+      <div class="ws-empty">
+        <mat-icon class="ws-empty-icon">edit_note</mat-icon>
+        <h3>Bienvenido a Writing Solver</h3>
+        <p>Escribe "Crea un post [tema]" para generar un post con el equipo de agentes.</p>
+        <p>Luego puedes pedir ajustes directamente en el chat.</p>
+
+        <div class="ws-examples">
+          <span class="ws-examples-label">Ejemplos:</span>
+          @for (example of examples; track example) {
+            <button class="ws-example-chip" (click)="sendExample(example)">
+              {{ example }}
+            </button>
+          }
+        </div>
+      </div>
+    } @else {
+      @for (msg of messages(); track $index) {
+        <div class="ws-message" [class]="'ws-message--' + msg.role">
+          <div class="ws-message-avatar">
+            <mat-icon>{{ msg.role === 'user' ? 'person' : 'smart_toy' }}</mat-icon>
+          </div>
+          <div class="ws-message-content">
+            <markdown [data]="msg.content" />
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Input area -->
+  <div class="ws-input-area">
+    <mat-form-field class="ws-input-field" appearance="outline">
+      <input matInput
+        placeholder='Escribe "Crea un post sobre [tema]" o pide ajustes...'
+        [(ngModel)]="inputText"
+        (keydown.enter)="send()"
+        [disabled]="isProcessing()" />
+    </mat-form-field>
+    <button mat-fab color="primary"
+      (click)="send()"
+      [disabled]="isProcessing() || !inputText().trim()">
+      @if (isProcessing()) {
+        <mat-spinner diameter="24" />
+      } @else {
+        <mat-icon>send</mat-icon>
+      }
+    </button>
+  </div>
+</div>
