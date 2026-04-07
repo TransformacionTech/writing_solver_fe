@@ -61,3 +61,4 @@ ehthumbs.db
 # Claude Code
 /.claude
 CLAUDE.md
+/system_spec
