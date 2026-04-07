@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://writing-solver-api.onrender.com',
-  githubClientId: 'Ov23liGccEN9ncCZc2G9',
+  apiUrl: 'http://localhost:8000',
+  githubClientId: 'Ov23liryb0P5YiiK7Kfy',
   appVersion: '1.0.0',
 };
