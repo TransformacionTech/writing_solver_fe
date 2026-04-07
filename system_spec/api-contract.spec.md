@@ -87,6 +87,32 @@ Re-indexa documentos de referencia en la base vectorial.
 
 ---
 
+### POST `/pipeline/upload-rag`
+
+Sube un archivo de referencia (post anterior, guia de estilo) para alimentar ChromaDB.
+
+**Content-Type:** `multipart/form-data`
+
+**Campo:** `file` (acepta `.pdf` y `.txt`)
+
+**Headers requeridos:** `Authorization: Bearer {token}`
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "filename": "guia-estilo.pdf",
+  "chunks_stored": 5,
+  "document_ids": ["doc-abc-1", "doc-abc-2"]
+}
+```
+
+**Validacion client-side:** El frontend rechaza extensiones distintas a `.pdf` y `.txt` antes de enviar.
+
+**Nota:** Se usa `HttpClient` con `FormData` (no fetch nativo) porque no es streaming.
+
+---
+
 ## Autenticacion
 
 - Todas las requests incluyen header `Authorization: Bearer {token}` via `authInterceptor`

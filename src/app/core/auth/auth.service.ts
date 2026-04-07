@@ -1,14 +1,17 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { AuthState, User } from '../../shared/models';
+import { Observable, tap } from 'rxjs';
+import { AuthState, User, GithubAuthResponse } from '../../shared/models';
+import { environment } from '../../../environments/environment';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_USER_KEY = 'auth_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -26,16 +29,66 @@ export class AuthService {
     return isPlatformBrowser(this.platformId);
   }
 
-  loginWithUser(user: User): Observable<User> {
+  /** Redirige al flujo OAuth de GitHub. */
+  loginWithGithub(): void {
+    const clientId = environment.githubClientId;
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    window.location.href =
+      `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
+  }
+
+  /** Intercambia el code de GitHub por un JWT del backend. */
+  handleGithubCallback(code: string): Observable<GithubAuthResponse> {
     this._state.update(s => ({ ...s, isLoading: true }));
-    const token = `mock-jwt-${user.id}-${Date.now()}`;
-    const userWithToken = { ...user, token };
+
+    return this.http
+      .post<GithubAuthResponse>(`${environment.apiUrl}/auth/github`, { code })
+      .pipe(
+        tap((res) => {
+          const user: User = {
+            id: res.user.id,
+            username: res.user.username,
+            email: res.user.email,
+            avatar_url: res.user.avatar_url,
+            roles: ['usuario'],
+          };
+
+          if (this.isBrowser) {
+            localStorage.setItem(AUTH_TOKEN_KEY, res.access_token);
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+          }
+
+          this._state.set({ user, isAuthenticated: true, isLoading: false });
+        }),
+      );
+  }
+
+  /** Guarda un JWT recibido directamente (redirect del backend). */
+  saveToken(token: string): void {
     if (this.isBrowser) {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(userWithToken));
+      // Decodificar payload del JWT para extraer datos del usuario
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const user: User = {
+          id: payload.sub ?? payload.id ?? '',
+          username: payload.username ?? payload.name ?? '',
+          email: payload.email ?? '',
+          avatar_url: payload.avatar_url,
+          roles: payload.roles ?? ['usuario'],
+        };
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        this._state.set({ user, isAuthenticated: true, isLoading: false });
+      } catch {
+        // Si el JWT no tiene payload decodificable, guardar solo el token
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        this._state.set({
+          user: { id: '', username: 'Usuario', email: '', roles: ['usuario'] },
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      }
     }
-    this._state.set({ user: userWithToken, isAuthenticated: true, isLoading: false });
-    return of(userWithToken);
   }
 
   logout(): void {
