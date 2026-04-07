@@ -39,9 +39,9 @@ testem.log
 /typings
 __screenshots__/
 
-# Environments (contienen secrets como GitHub Client ID)
-/src/environments/environment.ts
-/src/environments/environment.prod.ts
+# Environments
+# environment.ts y environment.prod.ts se suben con placeholders seguros
+# Los devs reemplazan githubClientId localmente si lo necesitan
 
 # System files
 .DS_Store
