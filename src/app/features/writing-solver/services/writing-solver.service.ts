@@ -6,7 +6,6 @@ import {
   PipelineEvent,
   ChatResponse,
   SuggestTopicsResponse,
-  RagUpdateResponse,
   ChatMessage,
 } from '../models/writing-solver.model';
 
@@ -102,11 +101,4 @@ export class WritingSolverService {
     });
   }
 
-  /** POST /pipeline/update-rag */
-  updateRag(content: string, metadata: Record<string, unknown> = {}): Observable<RagUpdateResponse> {
-    return this.http.post<RagUpdateResponse>(`${this.apiUrl}/pipeline/update-rag`, {
-      content,
-      metadata,
-    });
-  }
 }

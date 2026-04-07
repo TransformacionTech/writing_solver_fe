@@ -6,7 +6,7 @@ export interface ChatMessage {
 
 /** Evento SSE del pipeline /pipeline/run */
 export interface PipelineEvent {
-  type: 'progress' | 'result' | 'done';
+  type: 'progress' | 'result' | 'error' | 'done';
   agent?: string;
   message?: string;
   post?: string;
@@ -32,8 +32,3 @@ export interface RagUploadResponse {
   document_ids: string[];
 }
 
-/** Respuesta de POST /pipeline/update-rag */
-export interface RagUpdateResponse {
-  status: string;
-  document_id: string;
-}

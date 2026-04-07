@@ -44,7 +44,7 @@ export class CallbackComponent implements OnInit {
 
     this.authService.handleGithubCallback(code).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/new-post']);
       },
       error: (err) => {
         this.isLoading = false;
