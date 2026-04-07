@@ -1,0 +1,73 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Base de Conocimiento RAG</h1>
+    <div class="page-subtitle">
+      Sube archivos de referencia (posts anteriores, guias de estilo) para que los agentes editores adopten tu tono y formato
+    </div>
+  </div>
+
+  <!-- Drop zone -->
+  <div class="drop-zone"
+    [class.drop-zone--active]="isDragOver()"
+    [class.drop-zone--error]="validationError()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+    <mat-icon class="drop-icon">cloud_upload</mat-icon>
+    <span class="drop-text">Arrastra un archivo aqui</span>
+    <span class="drop-hint">o</span>
+    <button mat-flat-button class="btn-select" (click)="$event.stopPropagation(); fileInput.click()">
+      Seleccionar archivo
+    </button>
+    <span class="drop-hint">Solo .pdf, .txt y .docx</span>
+  </div>
+
+  <input type="file" #fileInput accept=".pdf,.txt,.docx" (change)="onFileSelected($event)" />
+
+  @if (validationError()) {
+    <div class="error-text">
+      <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">error</mat-icon>
+      {{ validationError() }}
+    </div>
+  }
+
+  <!-- Upload progress -->
+  @if (isUploading()) {
+    <mat-card class="upload-card">
+      <div class="upload-info">
+        <mat-icon>description</mat-icon>
+        <span class="upload-filename">{{ uploadingFilename() }}</span>
+        <span class="upload-status">Subiendo...</span>
+      </div>
+      <mat-progress-bar mode="indeterminate" color="primary" />
+    </mat-card>
+  }
+
+  <!-- Uploaded files list -->
+  <div class="files-section">
+    <div class="files-title">Archivos subidos</div>
+    @if (kbService.uploadedFiles().length > 0) {
+      <div class="file-list">
+        @for (file of kbService.uploadedFiles(); track $index) {
+          <div class="file-item">
+            <mat-icon class="file-icon">description</mat-icon>
+            <div class="file-details">
+              <span class="file-name">{{ file.filename }}</span>
+              <span class="file-meta">
+                {{ file.chunks }} chunks | {{ file.uploadedAt | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+            <button mat-icon-button class="file-remove" (click)="removeFile($index)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="files-empty">
+        Aun no se han subido archivos de referencia
+      </div>
+    }
+  </div>
+</div>

@@ -8,13 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MarkdownModule } from 'ngx-markdown';
 import { WritingSolverService } from './services/writing-solver.service';
 import { NotificationService } from '../../core/services/notification.service';
-import {
-  ChatMessage,
-  PipelineEvent,
-  Fase2Data,
-  PipelineCompletoData,
-  PipelineErrorData,
-} from './models/writing-solver.model';
+import { ChatMessage, PipelineEvent } from './models/writing-solver.model';
 
 @Component({
   selector: 'app-writing-solver',
@@ -44,11 +38,12 @@ import {
       align-items: center;
       justify-content: space-between;
       padding: 16px 24px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      background: var(--ws-surface);
       flex-shrink: 0;
+      transition: background-color 0.3s, border-color 0.3s;
 
-      h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+      h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: var(--ws-text); }
     }
 
     .ws-header-info {
@@ -59,7 +54,7 @@ import {
 
     .ws-subtitle {
       font-size: 0.8rem;
-      color: rgba(0,0,0,0.5);
+      color: var(--ws-text-muted);
     }
 
     .ws-header-actions {
@@ -83,10 +78,10 @@ import {
       justify-content: center;
       flex: 1;
       text-align: center;
-      color: rgba(0,0,0,0.5);
+      color: var(--ws-text-muted);
       gap: 8px;
 
-      h3 { margin: 0; font-size: 1.2rem; color: rgba(0,0,0,0.7); }
+      h3 { margin: 0; font-size: 1.2rem; color: var(--ws-text-secondary); }
       p { margin: 0; font-size: 0.88rem; max-width: 480px; line-height: 1.5; }
     }
 
@@ -94,7 +89,7 @@ import {
       font-size: 4rem;
       width: 4rem;
       height: 4rem;
-      color: #da6ccf;
+      color: #6200EA;
       opacity: 0.5;
       margin-bottom: 8px;
     }
@@ -112,24 +107,24 @@ import {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: rgba(0,0,0,0.4);
+      color: var(--ws-text-hint);
     }
 
     .ws-example-chip {
-      background: white;
-      border: 1px solid rgba(0,0,0,0.12);
+      background: var(--ws-surface);
+      border: 1px solid var(--ws-border-strong);
       border-radius: 20px;
       padding: 8px 16px;
       font-size: 0.84rem;
       cursor: pointer;
       transition: all 0.2s;
-      color: rgba(0,0,0,0.7);
+      color: var(--ws-text-secondary);
       max-width: 480px;
 
       &:hover {
-        border-color: #da6ccf;
-        color: #da6ccf;
-        background: rgba(218,108,207,0.04);
+        border-color: #6200EA;
+        color: #6200EA;
+        background: rgba(98,0,234,0.04);
       }
     }
 
@@ -163,7 +158,7 @@ import {
         color: white;
       }
       .ws-message--assistant & {
-        background: #da6ccf;
+        background: #6200EA;
         color: white;
       }
 
@@ -184,9 +179,9 @@ import {
       }
 
       .ws-message--assistant & {
-        background: white;
-        color: #1a1a2e;
-        border: 1px solid rgba(0,0,0,0.08);
+        background: var(--ws-surface);
+        color: var(--ws-text);
+        border: 1px solid var(--ws-border);
         border-bottom-left-radius: 4px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       }
@@ -197,8 +192,9 @@ import {
       align-items: center;
       gap: 12px;
       padding: 12px 24px 16px;
-      background: white;
-      border-top: 1px solid rgba(0,0,0,0.08);
+      background: var(--ws-surface);
+      border-top: 1px solid var(--ws-border);
+      transition: background-color 0.3s, border-color 0.3s;
       flex-shrink: 0;
     }
 
@@ -249,11 +245,6 @@ export class WritingSolverComponent implements AfterViewChecked {
     this.inputText.set('');
     this.addMessage('user', text);
 
-    if (this.detectTopicSuggestion(text)) {
-      this.suggestTopics();
-      return;
-    }
-
     const tema = this.detectTema(text);
     if (tema) {
       this.runPipeline(tema);
@@ -276,61 +267,14 @@ export class WritingSolverComponent implements AfterViewChecked {
     this.send();
   }
 
-  suggestTopics(): void {
-    this.isProcessing.set(true);
-    this.addMessage('assistant', '**Buscando temas trending...**\n\n_El TopicSuggester analiza el mercado asegurador en LATAM._');
-
-    this.solverService.suggestTopics().subscribe({
-      next: (event) => this.handleTopicEvent(event),
-      error: (err) => {
-        this.updateLastAssistantMessage(`**Error al sugerir temas:**\n\n\`${err.message}\``);
-        this.isProcessing.set(false);
-        this.notificationService.error('Error al sugerir temas');
-      },
-      complete: () => this.isProcessing.set(false),
-    });
-  }
-
-  updateRag(): void {
-    this.isProcessing.set(true);
-    this.addMessage('user', 'Actualizar base RAG');
-    this.addMessage('assistant', '**Actualizando base de datos RAG...**');
-
-    this.solverService.updateRag().subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.updateLastAssistantMessage(
-            `**Base RAG actualizada.**\n\n\`\`\`\n${res.output}\n\`\`\`\n\nLos agentes ya pueden consultar los posts indexados.`,
-          );
-          this.notificationService.success('Base RAG actualizada');
-        } else {
-          this.updateLastAssistantMessage(
-            `**Error al actualizar la base RAG:**\n\n\`\`\`\n${res.output}\n\`\`\``,
-          );
-          this.notificationService.error('Error al actualizar RAG');
-        }
-      },
-      error: (err) => {
-        this.updateLastAssistantMessage(`**Error inesperado:**\n\n\`${err.message}\``);
-        this.notificationService.error('Error al actualizar RAG');
-      },
-      complete: () => this.isProcessing.set(false),
-    });
-  }
-
   private runPipeline(tema: string): void {
     this.isProcessing.set(true);
-    this.addMessage(
-      'assistant',
-      '**Fase 1/2 -- Investigacion**\n\n' +
-      'El **Researcher** busca datos actuales en la web sobre el tema.\n' +
-      'Luego el **Writer** redacta el post con esa informacion.\n\n' +
-      '_Esto puede tardar 30-90 segundos._',
-    );
+    this.addMessage('assistant', '**Iniciando pipeline...**\n\nLos agentes estan trabajando en tu post.');
 
-    this.solverService.runPipeline(tema).subscribe({
-      next: (event) => this.handlePipelineEvent(event),
-      error: (err) => {
+    const { events$ } = this.solverService.runPipeline(tema);
+    events$.subscribe({
+      next: (event: PipelineEvent) => this.handlePipelineEvent(event),
+      error: (err: Error) => {
         this.updateLastAssistantMessage(`**Error en el pipeline:**\n\n\`${err.message}\``);
         this.isProcessing.set(false);
         this.notificationService.error('Error en el pipeline');
@@ -341,74 +285,38 @@ export class WritingSolverComponent implements AfterViewChecked {
 
   private handlePipelineEvent(event: PipelineEvent): void {
     switch (event.type) {
-      case 'FASE1_INICIO':
+      case 'progress':
         this.updateLastAssistantMessage(
-          '**Fase 1/2 -- Investigacion**\n\n' +
-          'El **Researcher** busca datos actuales en la web sobre el tema.\n' +
-          'Luego el **Writer** redacta el post con esa informacion.\n\n' +
-          '_Esto puede tardar 30-90 segundos._',
+          `**[${event.agent}]** ${event.message}`,
         );
         break;
 
-      case 'FASE2_INTENTO': {
-        const d = event.data as unknown as Fase2Data;
+      case 'result':
+        this.postState = event.post ?? '';
         this.updateLastAssistantMessage(
-          `Fase 1 completa. Investigacion + post inicial listos.\n\n` +
-          `**Fase 2/2 -- Edicion y Evaluacion (intento ${d.intento}/${d.max})**\n\n` +
-          `El **Editor** mejora el borrador y el **Reader** evalua ` +
-          `si suena como un post real de Tech And Solve (score >= 8/10 para aprobar).\n\n` +
-          `_Esto puede tardar 20-40 segundos por intento._`,
+          `### Post Generado (Score: ${event.score ?? '-'}/10)\n\n${event.post}\n\n` +
+          `---\nAhora puedes pedirme ajustes sobre el post.`,
         );
+        this.notificationService.success(`Post generado con score ${event.score ?? '-'}/10`);
         break;
-      }
 
-      case 'PIPELINE_COMPLETO': {
-        const d = event.data as unknown as PipelineCompletoData;
-        this.postState = d.post;
-        const proceso = d.log.join('\n');
-        this.updateLastAssistantMessage(
-          `### Proceso completado\n\n${proceso}\n\n` +
-          `---\n\n### Post Final Aprobado\n\n${d.post}\n\n` +
-          `---\nAhora puedes pedirme ajustes sobre el post, o hacer preguntas sobre el.`,
-        );
-        this.notificationService.success('Post generado exitosamente');
+      case 'done':
         break;
-      }
-
-      case 'PIPELINE_ERROR': {
-        const d = event.data as unknown as PipelineErrorData;
-        this.updateLastAssistantMessage(`**Error en Fase ${d.fase}:**\n\n\`${d.error}\``);
-        this.notificationService.error(`Error en fase ${d.fase}`);
-        break;
-      }
     }
   }
 
-  private handleTopicEvent(event: PipelineEvent): void {
-    if (event.type === 'PIPELINE_COMPLETO') {
-      const ideas = (event.data as Record<string, string>)['ideas'] ?? '';
-      this.updateLastAssistantMessage(
-        `### Ideas de Posts para Marketing\n\n${ideas}\n\n` +
-        `---\nDi **"Crea un post [tema]"** para generar cualquiera de estas ideas.`,
-      );
-    } else if (event.type === 'PIPELINE_ERROR') {
-      const d = event.data as unknown as PipelineErrorData;
-      this.updateLastAssistantMessage(`**Error al sugerir temas:**\n\n\`${d.error}\``);
-    }
-  }
-
-  private chatAboutPost(mensaje: string): void {
+  private chatAboutPost(message: string): void {
     this.isProcessing.set(true);
     this.addMessage('assistant', '**Procesando tu peticion...**');
 
-    this.solverService.chatAboutPost(mensaje, this.postState, this.messages()).subscribe({
+    this.solverService.chatAboutPost(message, this.postState, this.messages()).subscribe({
       next: (res) => {
         this.updateLastAssistantMessage(res.respuesta);
         if (res.post_modificado) {
           this.postState = res.respuesta;
         }
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.updateLastAssistantMessage(`**Error en el chat:**\n\n\`${err.message}\``);
         this.notificationService.error('Error al procesar mensaje');
       },
@@ -445,9 +353,5 @@ export class WritingSolverComponent implements AfterViewChecked {
   private detectTema(text: string): string | null {
     const match = text.match(/crea\s+un\s+post\s+(?:sobre\s+)?(.+)/i);
     return match ? match[1].trim() : null;
-  }
-
-  private detectTopicSuggestion(text: string): boolean {
-    return /sugi?er[ea]\s+temas?/i.test(text) || /temas?\s+trending/i.test(text);
   }
 }

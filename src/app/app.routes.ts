@@ -4,7 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'new-post',
     pathMatch: 'full',
   },
   {
@@ -14,14 +14,24 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'dashboard',
+        path: 'new-post',
         loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+          import('./features/new-post/new-post.component').then(m => m.NewPostComponent),
+      },
+      {
+        path: 'topic-ideas',
+        loadComponent: () =>
+          import('./features/topic-ideas/topic-ideas.component').then(m => m.TopicIdeasComponent),
       },
       {
         path: 'writing-solver',
         loadComponent: () =>
           import('./features/writing-solver/writing-solver.component').then(m => m.WritingSolverComponent),
+      },
+      {
+        path: 'knowledge-base',
+        loadComponent: () =>
+          import('./features/knowledge-base/knowledge-base.component').then(m => m.KnowledgeBaseComponent),
       },
       {
         path: 'settings',
@@ -31,12 +41,17 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'login-success',
+    loadComponent: () =>
+      import('./features/auth/pages/login-success/login-success.component').then(m => m.LoginSuccessComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () =>
       import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
     path: '**',
-    redirectTo: 'dashboard',
+    redirectTo: 'new-post',
   },
 ];

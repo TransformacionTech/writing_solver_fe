@@ -5,7 +5,7 @@ import { environment } from '../../../../environments/environment';
 import {
   PipelineEvent,
   ChatResponse,
-  TopicSuggestionResponse,
+  SuggestTopicsResponse,
   RagUpdateResponse,
   ChatMessage,
 } from '../models/writing-solver.model';
@@ -18,21 +18,26 @@ export class WritingSolverService {
 
   /**
    * Inicia el pipeline de generacion de post via SSE.
-   * El backend envia eventos Server-Sent Events con el progreso.
+   * Eventos: { type: "progress", agent, message }, { type: "result", post, score }, { type: "done" }
    */
-  runPipeline(tema: string): Observable<PipelineEvent> {
-    return new Observable(observer => {
+  runPipeline(topic: string, context?: string, userId?: string): { events$: Observable<PipelineEvent>; abort: () => void } {
+    const controller = new AbortController();
+
+    const events$ = new Observable<PipelineEvent>(observer => {
       const url = `${this.apiUrl}/pipeline/run`;
+      const token = localStorage.getItem('auth_token');
 
       fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tema }),
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ topic, context, user_id: userId }),
       }).then(response => {
         if (!response.ok) {
-          this.ngZone.run(() => {
-            observer.error(new Error(`Error HTTP ${response.status}`));
-          });
+          this.ngZone.run(() => observer.error(new Error(`Error HTTP ${response.status}`)));
           return;
         }
 
@@ -64,91 +69,44 @@ export class WritingSolverService {
 
             read();
           }).catch(err => {
-            this.ngZone.run(() => observer.error(err));
+            if (err.name !== 'AbortError') {
+              this.ngZone.run(() => observer.error(err));
+            }
           });
         };
 
         read();
       }).catch(err => {
-        this.ngZone.run(() => observer.error(err));
+        if (err.name !== 'AbortError') {
+          this.ngZone.run(() => observer.error(err));
+        }
       });
 
-      return () => {
-        // cleanup si se desuscribe
-      };
+      return () => controller.abort();
     });
+
+    return { events$, abort: () => controller.abort() };
   }
 
-  /**
-   * Sugiere temas via SSE (streaming).
-   */
-  suggestTopics(): Observable<PipelineEvent> {
-    return new Observable(observer => {
-      const url = `${this.apiUrl}/pipeline/suggest-topics`;
-
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      }).then(response => {
-        if (!response.ok) {
-          this.ngZone.run(() => observer.error(new Error(`Error HTTP ${response.status}`)));
-          return;
-        }
-
-        const reader = response.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        const read = (): void => {
-          reader.read().then(({ done, value }) => {
-            if (done) {
-              this.ngZone.run(() => observer.complete());
-              return;
-            }
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() ?? '';
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                try {
-                  const event: PipelineEvent = JSON.parse(line.slice(6));
-                  this.ngZone.run(() => observer.next(event));
-                } catch {
-                  // ignorar
-                }
-              }
-            }
-
-            read();
-          }).catch(err => this.ngZone.run(() => observer.error(err)));
-        };
-
-        read();
-      }).catch(err => this.ngZone.run(() => observer.error(err)));
-    });
+  /** GET /pipeline/suggest-topics */
+  suggestTopics(): Observable<SuggestTopicsResponse> {
+    return this.http.get<SuggestTopicsResponse>(`${this.apiUrl}/pipeline/suggest-topics`);
   }
 
-  /**
-   * Envia un mensaje sobre el post existente (no SSE, request normal).
-   */
-  chatAboutPost(
-    mensaje: string,
-    postActual: string,
-    history: ChatMessage[],
-  ): Observable<ChatResponse> {
+  /** POST /pipeline/chat */
+  chatAboutPost(mensaje: string, postActual: string, history: ChatMessage[]): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(`${this.apiUrl}/pipeline/chat`, {
       mensaje,
-      post: postActual,
+      post_actual: postActual,
       history: history.map(m => ({ role: m.role, content: m.content })),
     });
   }
 
-  /**
-   * Actualiza la base de datos RAG.
-   */
-  updateRag(): Observable<RagUpdateResponse> {
-    return this.http.post<RagUpdateResponse>(`${this.apiUrl}/pipeline/update-rag`, {});
+  /** POST /pipeline/update-rag */
+  updateRag(content: string, metadata: Record<string, unknown> = {}): Observable<RagUpdateResponse> {
+    return this.http.post<RagUpdateResponse>(`${this.apiUrl}/pipeline/update-rag`, {
+      content,
+      metadata,
+    });
   }
 }

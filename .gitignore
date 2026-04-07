@@ -39,6 +39,25 @@ testem.log
 /typings
 __screenshots__/
 
+# Environments (contienen secrets como GitHub Client ID)
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+
 # System files
 .DS_Store
 Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Logs
+*.log
+
+# Editor temp files
+*.swp
+*.swo
+*~
+*.local
+
+# Claude Code
+/.claude
+CLAUDE.md

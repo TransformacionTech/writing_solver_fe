@@ -1,0 +1,267 @@
+<div class="page-container">
+  <!-- Page header -->
+  <div class="page-header">
+    <h1>Crear Nuevo Post de LinkedIn</h1>
+    <div class="page-subtitle">
+      Genera contenido profesional para el sector Insurtech con agentes de IA
+    </div>
+  </div>
+
+  <!-- Content area: full width when no post, two columns when post exists -->
+  <div class="content-area" [class.content-area--full]="!hasPost() && !isProcessing()">
+
+    <!-- Editor panel -->
+    <div class="editor-panel" [class.editor-panel--full]="!hasPost() && !isProcessing()">
+
+      <!-- Toolbar: only when post exists -->
+      @if (hasPost() && !isProcessing()) {
+      <div class="editor-toolbar">
+        <div class="editor-toolbar-left">
+          <button mat-stroked-button class="btn-regenerate" (click)="improve()">
+            <mat-icon>refresh</mat-icon>
+            Regenerar
+          </button>
+          <button mat-stroked-button class="btn-save-draft" (click)="saveDraft()">
+            Guardar Borrador
+          </button>
+        </div>
+        <button mat-flat-button class="btn-publish" (click)="publish()">
+          Aprobar
+        </button>
+        <button mat-stroked-button class="btn-toggle-preview" (click)="togglePreview()">
+          <mat-icon>{{ showPreview() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          {{ showPreview() ? 'Ocultar preview' : 'Ver preview' }}
+        </button>
+      </div>
+      }
+
+      <!-- Version bar: when multiple versions exist -->
+      @if (versions().length > 1 && !isProcessing()) {
+      <div class="versions-bar">
+        <span class="versions-label">Versiones:</span>
+        @for (v of versions(); track $index) {
+        <button class="version-chip" [class.version-chip--active]="activeVersion() === $index"
+          (click)="selectVersion($index)">
+          v{{ $index + 1 }}@if (v.score !== null) { ({{ v.score }}/10)}
+        </button>
+        }
+      </div>
+      }
+
+      <!-- Editor content -->
+      <div class="editor-content">
+        @if (isProcessing()) {
+        <div class="editor-processing">
+          @for (step of agentSteps(); track step.agent) {
+          <div class="agent-step">
+            <div class="agent-indicator">
+              <div class="agent-circle" [class.agent-circle--active]="step.status === 'active'"
+                [class.agent-circle--done]="step.status === 'done'">
+                @if (step.status === 'done') {
+                <mat-icon>check</mat-icon>
+                } @else {
+                <mat-icon>{{ step.icon }}</mat-icon>
+                }
+              </div>
+              @if (step.agent !== 'editor') {
+              <div class="agent-line" [class.agent-line--active]="step.status === 'active'"
+                [class.agent-line--done]="step.status === 'done'">
+              </div>
+              }
+            </div>
+            <div class="agent-content">
+              <div class="agent-header">
+                <span class="agent-name" [class.agent-name--active]="step.status === 'active'"
+                  [class.agent-name--done]="step.status === 'done'">
+                  {{ step.label }}
+                </span>
+                @if (step.status === 'active') {
+                <mat-spinner diameter="14" />
+                <span class="agent-status-text agent-status-text--active">En curso</span>
+                } @else if (step.status === 'done') {
+                <span class="agent-status-text">Completado</span>
+                }
+              </div>
+              @if (step.messages.length > 0) {
+              <div class="agent-messages">
+                @for (msg of step.messages; track $index) {
+                <div class="agent-msg">{{ msg }}</div>
+                }
+              </div>
+              } @else if (step.status === 'pending') {
+              <span class="agent-pending">En espera</span>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        } @else if (hasPost()) {
+        <markdown [data]="postContent()" />
+        @if (postScore() !== null) {
+        <div class="score-badge">
+          <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">star</mat-icon>
+          Score: {{ postScore() }}/10
+        </div>
+        }
+        @if (processLog().length > 0) {
+        <div class="process-log">
+          <div class="log-title">Registro del proceso</div>
+          @for (entry of processLog(); track $index) {
+          <div class="log-entry">{{ entry }}</div>
+          }
+        </div>
+        }
+
+        <!-- Chat history -->
+        @if (chatHistory().length > 0) {
+        <div class="chat-messages">
+          @for (msg of chatHistory(); track $index) {
+          <div class="chat-msg" [class.chat-msg--user]="msg.role === 'user'"
+            [class.chat-msg--assistant]="msg.role === 'assistant'">
+            @if (msg.role === 'assistant') {
+            <markdown [data]="msg.content" />
+            } @else {
+            {{ msg.content }}
+            }
+          </div>
+          }
+          @if (isChatLoading()) {
+          <div class="chat-typing">
+            <mat-spinner diameter="14" />
+            Escribiendo...
+          </div>
+          }
+        </div>
+        }
+        } @else {
+        <div class="editor-empty">
+          <mat-icon>edit_note</mat-icon>
+          <p>Ingresa un tema y presiona "Generar" para que los agentes creen tu post</p>
+
+          @if (draftService.drafts().length > 0) {
+          <div class="drafts-section">
+            <span class="drafts-label">Borradores guardados</span>
+            <div class="drafts-list">
+              @for (draft of draftService.drafts(); track draft.id) {
+              <div class="draft-item">
+                <div class="draft-info" (click)="loadDraft(draft.id)">
+                  <span class="draft-topic">{{ draft.topic || 'Sin tema' }}</span>
+                  <span class="draft-meta">
+                    @if (draft.score !== null) { Score: {{ draft.score }}/10 · }
+                    {{ draft.savedAt | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </div>
+                <button mat-icon-button class="draft-remove" (click)="removeDraft(draft.id)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area">
+        <mat-form-field class="input-field" appearance="outline">
+          @if (hasPost()) {
+          <mat-label>Pide un ajuste al post...</mat-label>
+          } @else {
+          <mat-label>Tema del post</mat-label>
+          }
+          @if (hasPost()) {
+          <input matInput placeholder="Ej: Hazlo mas corto, agrega estadisticas..."
+            [(ngModel)]="chatInput"
+            [disabled]="isProcessing() || isChatLoading()"
+            (keydown.enter)="sendChatMessage()" />
+          } @else {
+          <input matInput placeholder="Ej: Modernizacion de sistemas legacy en aseguradoras"
+            [(ngModel)]="topic"
+            [disabled]="isProcessing()"
+            (keydown.enter)="generate()" />
+          }
+        </mat-form-field>
+
+        @if (isProcessing()) {
+        <button mat-flat-button class="btn-stop" (click)="stop()">
+          <mat-icon>stop</mat-icon>
+          Detener
+        </button>
+        } @else if (hasPost()) {
+        <button mat-flat-button class="btn-generate" (click)="sendChatMessage()"
+          [disabled]="!chatInput().trim() || isChatLoading()">
+          <mat-icon>send</mat-icon>
+          Enviar
+        </button>
+        } @else {
+        <button mat-flat-button class="btn-generate" (click)="generate()"
+          [disabled]="!topic().trim()">
+          <mat-icon>play_arrow</mat-icon>
+          Generar
+        </button>
+        }
+      </div>
+
+    </div>
+
+    <!-- LinkedIn Preview: only when post exists and preview enabled -->
+    @if (hasPost() && !isProcessing() && showPreview()) {
+    <div class="preview-panel">
+      <div class="preview-header">
+        <span>Vista previa en LinkedIn</span>
+        <button mat-icon-button class="preview-close" (click)="togglePreview()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="preview-content">
+        <div class="linkedin-mockup">
+          <div class="li-header">
+            <img src="assets/image/logo.jpg" alt="Logo" class="li-avatar">
+            <div class="li-user-info">
+              <span class="li-user-name">
+                @if (authService.currentUser(); as user) {
+                {{ user.username }}
+                } @else {
+                Usuario
+                }
+              </span>
+              <span class="li-user-title">Tech And Solve</span>
+              <span class="li-timestamp">Ahora</span>
+            </div>
+          </div>
+          <div class="li-body">
+            <markdown [data]="previewText()" />
+            @if (isPreviewTruncated() && !isPreviewExpanded()) {
+            <span class="li-see-more" (click)="togglePreviewExpand()">...ver mas</span>
+            }
+            @if (isPreviewExpanded() && isPreviewTruncated()) {
+            <span class="li-see-more" (click)="togglePreviewExpand()">ver menos</span>
+            }
+          </div>
+          <div class="li-actions">
+            <div class="li-action">
+              <mat-icon>thumb_up_off_alt</mat-icon>
+              Recomendar
+            </div>
+            <div class="li-action">
+              <mat-icon>chat_bubble_outline</mat-icon>
+              Comentar
+            </div>
+            <div class="li-action">
+              <mat-icon>repeat</mat-icon>
+              Compartir
+            </div>
+            <div class="li-action">
+              <mat-icon>send</mat-icon>
+              Enviar
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+  </div>
+</div>

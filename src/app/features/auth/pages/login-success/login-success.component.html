@@ -1,0 +1,10 @@
+<div class="container">
+  <div class="content">
+    @if (errorMessage) {
+      <span class="error">{{ errorMessage }}</span>
+    } @else {
+      <mat-spinner diameter="40" />
+      <span class="message">Iniciando sesion...</span>
+    }
+  </div>
+</div>

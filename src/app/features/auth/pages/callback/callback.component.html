@@ -1,0 +1,11 @@
+<div class="callback-container">
+  <div class="callback-content">
+    @if (isLoading) {
+      <mat-spinner diameter="40" />
+      <span class="callback-message">Autenticando con GitHub...</span>
+    } @else if (errorMessage) {
+      <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem; color: #ef5350;">error</mat-icon>
+      <span class="callback-error">{{ errorMessage }}</span>
+    }
+  </div>
+</div>

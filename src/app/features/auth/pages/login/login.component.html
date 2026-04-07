@@ -1,26 +1,16 @@
 <div class="login-container">
   <div class="login-content">
     <div class="login-header">
-      <mat-icon class="login-app-icon">hub</mat-icon>
-      <h2>MI APP</h2>
-      <p>Selecciona tu perfil para continuar</p>
+      <img class="login-app-icon" src="favicon.ico" alt="Writing Solver" />
+      <h2>Writing Solver</h2>
+      <p>Genera posts de LinkedIn con agentes de IA</p>
     </div>
 
-    <div class="user-cards">
-      @for (user of users; track user.id) {
-        <button class="user-card" (click)="loginAs(user)">
-          <div class="user-avatar">
-            <mat-icon>{{ user.icon }}</mat-icon>
-          </div>
-          <div class="user-info">
-            <span class="user-name">{{ user.name }}</span>
-            <span class="user-role">{{ user.roleLabel }}</span>
-          </div>
-          <mat-icon class="arrow">arrow_forward</mat-icon>
-        </button>
-      }
-    </div>
+    <button class="github-btn" (click)="loginWithGithub()">
+      <mat-icon class="github-icon">code</mat-icon>
+      Iniciar sesion con GitHub
+    </button>
 
-    <p class="login-hint">Ambiente de desarrollo — autenticacion simulada</p>
+    <p class="login-hint">Se usara tu cuenta de GitHub para autenticarte</p>
   </div>
 </div>

@@ -4,44 +4,36 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export type PipelineEventType =
-  | 'FASE1_INICIO'
-  | 'FASE1_COMPLETA'
-  | 'FASE2_INTENTO'
-  | 'FASE2_EVALUACION'
-  | 'PIPELINE_COMPLETO'
-  | 'PIPELINE_ERROR';
-
+/** Evento SSE del pipeline /pipeline/run */
 export interface PipelineEvent {
-  type: PipelineEventType;
-  data: Record<string, unknown>;
+  type: 'progress' | 'result' | 'done';
+  agent?: string;
+  message?: string;
+  post?: string;
+  score?: number;
 }
 
-export interface Fase2Data {
-  intento: number;
-  max: number;
-}
-
-export interface PipelineCompletoData {
-  post: string;
-  log: string[];
-}
-
-export interface PipelineErrorData {
-  fase: number;
-  error: string;
-}
-
+/** Respuesta de POST /pipeline/chat */
 export interface ChatResponse {
   respuesta: string;
   post_modificado: boolean;
 }
 
-export interface TopicSuggestionResponse {
-  ideas: string;
+/** Respuesta de GET /pipeline/suggest-topics */
+export interface SuggestTopicsResponse {
+  topics: string[];
 }
 
+/** Respuesta de POST /pipeline/upload-rag */
+export interface RagUploadResponse {
+  status: string;
+  filename: string;
+  chunks_stored: number;
+  document_ids: string[];
+}
+
+/** Respuesta de POST /pipeline/update-rag */
 export interface RagUpdateResponse {
-  success: boolean;
-  output: string;
+  status: string;
+  document_id: string;
 }

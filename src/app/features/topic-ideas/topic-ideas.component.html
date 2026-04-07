@@ -1,0 +1,50 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Ideas de Temas</h1>
+      <div class="page-subtitle">
+        El TopicSuggester analiza tendencias del mercado asegurador en LATAM
+      </div>
+    </div>
+    <button mat-flat-button class="btn-suggest"
+      (click)="suggest()"
+      [disabled]="isLoading()">
+      @if (isLoading()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <mat-icon>auto_awesome</mat-icon>
+      }
+      Generar Ideas
+    </button>
+  </div>
+
+  <mat-card class="ideas-card">
+    @if (isLoading()) {
+      <div class="ideas-loading">
+        <mat-spinner diameter="40" />
+        <span>Analizando tendencias actuales...</span>
+      </div>
+    } @else if (topics().length > 0) {
+      <div class="ideas-list">
+        @for (topic of topics(); track $index) {
+          <div class="idea-item" (click)="selectTopic(topic)">
+            <div class="idea-number">{{ $index + 1 }}</div>
+            <span class="idea-text">{{ topic }}</span>
+            <mat-icon class="idea-arrow">arrow_forward</mat-icon>
+          </div>
+        }
+      </div>
+      <div class="ideas-footer">
+        <button mat-flat-button class="btn-suggest" (click)="suggest()">
+          <mat-icon>refresh</mat-icon>
+          Generar nuevas ideas
+        </button>
+      </div>
+    } @else {
+      <div class="ideas-empty">
+        <mat-icon>lightbulb</mat-icon>
+        <p>Presiona "Generar Ideas" para que el agente sugiera temas de posts enfocados en el nicho Insurtech</p>
+      </div>
+    }
+  </mat-card>
+</div>

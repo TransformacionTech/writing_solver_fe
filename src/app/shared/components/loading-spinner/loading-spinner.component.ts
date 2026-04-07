@@ -11,7 +11,7 @@ import { LoadingService } from '../../../core/interceptors/loading.interceptor';
     .loading-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(255,255,255,0.6);
+      background: var(--ws-overlay);
       display: flex;
       align-items: center;
       justify-content: center;

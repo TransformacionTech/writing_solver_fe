@@ -1,81 +1,59 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { User } from '../../../../shared/models';
-import { MOCK_USERS, MockUser } from '../../models/mock-users.const';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule],
   templateUrl: './login.component.html',
   styles: [`
+    :host { display: block; height: 100vh; overflow: hidden; }
     .login-container {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(160deg, #0d0d1a 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
+      height: 100%;
+      background: #1a1a2e;
     }
     .login-content {
-      width: 440px; display: flex; flex-direction: column; align-items: center; gap: 36px;
+      width: 440px; display: flex; flex-direction: column; align-items: center; gap: 24px;
     }
     .login-header {
       text-align: center; color: white;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
-      h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-      p { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin: 0; letter-spacing: 0.3px; }
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      h2 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+      p { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin: 0; letter-spacing: 0.3px; }
     }
     .login-app-icon {
-      font-size: 4rem; width: 4rem; height: 4rem; color: #da6ccf;
-      background: rgba(218,108,207,0.15); border-radius: 20px; padding: 12px;
-      box-sizing: content-box;
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      object-fit: contain;
     }
-    .user-cards { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-    .user-card {
-      display: flex; align-items: center; gap: 16px;
-      padding: 16px 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.06); backdrop-filter: blur(8px);
-      cursor: pointer; transition: all 0.2s; width: 100%; text-align: left;
-      color: white;
+    .github-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 32px; border-radius: 12px;
+      background: white; color: #1a1a2e;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      border: none; width: 100%;
+      justify-content: center;
+
       &:hover {
-        background: rgba(255,255,255,0.12);
-        border-color: rgba(218,108,207,0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        background: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       }
     }
-    .user-avatar {
-      width: 48px; height: 48px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      background: rgba(218,108,207,0.2); color: #da6ccf;
-      mat-icon { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+    .github-icon {
+      font-size: 1.4rem; width: 1.4rem; height: 1.4rem;
     }
-    .user-info { display: flex; flex-direction: column; flex: 1; gap: 2px; }
-    .user-name { font-size: 1rem; font-weight: 600; }
-    .user-role { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
-    .arrow { color: rgba(255,255,255,0.3); transition: color 0.2s; }
-    .user-card:hover .arrow { color: #da6ccf; }
     .login-hint { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin: 0; }
   `],
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
-  readonly users = MOCK_USERS;
-
-  loginAs(mockUser: MockUser): void {
-    const user: User = {
-      id: mockUser.id,
-      username: mockUser.name,
-      email: mockUser.email,
-      roles: [mockUser.roleLabel],
-    };
-    this.authService.loginWithUser(user).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
-    });
+  loginWithGithub(): void {
+    this.authService.loginWithGithub();
   }
 }

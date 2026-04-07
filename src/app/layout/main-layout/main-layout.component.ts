@@ -10,6 +10,12 @@ import { NotificationToastComponent } from '../../shared/components/notification
   imports: [RouterOutlet, SidebarComponent, HeaderComponent, NotificationToastComponent],
   templateUrl: './main-layout.component.html',
   styles: [`
+    :host {
+      display: block;
+      height: 100%;
+      background: var(--ws-bg);
+      transition: background-color 0.3s;
+    }
     .app-shell {
       display: flex;
       height: 100vh;
@@ -20,11 +26,13 @@ import { NotificationToastComponent } from '../../shared/components/notification
       flex-direction: column;
       flex: 1;
       overflow: hidden;
+      background: var(--ws-bg);
+      transition: background-color 0.3s;
     }
     .main-content {
       flex: 1;
       overflow: auto;
-      background: #f5f7fb;
+      background: inherit;
     }
   `],
 })

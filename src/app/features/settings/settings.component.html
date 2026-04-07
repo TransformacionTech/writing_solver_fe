@@ -3,8 +3,18 @@
     <h1>Configuracion</h1>
     <span class="subtitle">Ajustes del sistema</span>
   </div>
-  <div class="empty-state">
-    <mat-icon>settings</mat-icon>
-    <p>Configuracion del sistema disponible proximamente.</p>
+
+  <div class="settings-section">
+    <div class="section-title">Apariencia</div>
+    <div class="setting-item">
+      <div class="setting-icon">
+        <mat-icon>{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</mat-icon>
+      </div>
+      <div class="setting-info">
+        <span class="setting-label">Modo oscuro</span>
+        <span class="setting-desc">Cambia la apariencia de la interfaz</span>
+      </div>
+      <mat-slide-toggle [checked]="themeService.isDark()" (change)="themeService.toggle()" color="primary" />
+    </div>
   </div>
 </div>
