@@ -39,9 +39,7 @@ testem.log
 /typings
 __screenshots__/
 
-# Environments
-# environment.ts y environment.prod.ts se suben con placeholders seguros
-# Los devs reemplazan githubClientId localmente si lo necesitan
+
 
 # System files
 .DS_Store
