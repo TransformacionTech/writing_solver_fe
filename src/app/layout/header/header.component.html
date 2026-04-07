@@ -41,7 +41,7 @@
       @if (authService.currentUser(); as user) {
         <div class="menu-user-info">
           <span class="menu-user-name">{{ user.username }}</span>
-          <span class="menu-user-role">{{ user.roles?.join(', ') }}</span>
+          <span class="menu-user-role">{{ user.roles.join(', ') }}</span>
         </div>
       }
       <mat-divider />
