@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
-import { saveAs } from 'file-saver';
 
 @Injectable({ providedIn: 'root' })
 export class DocxExportService {
@@ -32,8 +31,16 @@ export class DocxExportService {
 
     const blob = await Packer.toBlob(doc);
     const filename = topic.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').trim().replace(/\s+/g, '-').slice(0, 50);
-    saveAs(blob, `${filename}.docx`);
-    return { blob, filename: `${filename}.docx` };
+    const fullName = `${filename}.docx`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fullName;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    return { blob, filename: fullName };
   }
 
   private parseMarkdownToParagraphs(markdown: string): Paragraph[] {
