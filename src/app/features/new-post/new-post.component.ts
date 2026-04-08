@@ -160,7 +160,7 @@ const STEP_ORDER = ['researcher', 'writer', 'editor'];
     /* Drafts */
     .drafts-section {
       width: 100%;
-      max-width: 100%;
+      max-width: 420px;
       text-align: left;
     }
     .drafts-label {
@@ -176,14 +176,13 @@ const STEP_ORDER = ['researcher', 'writer', 'editor'];
       gap: 4px;
     }
     .draft-item {
-      position: relative;
       display: flex;
       align-items: center;
-      padding: 8px 44px 8px 12px;
+      gap: 8px;
+      padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid var(--ws-border);
       background: var(--ws-surface);
-      overflow: hidden;
       transition: all 0.15s;
       &:hover { border-color: var(--ws-primary); box-shadow: 0 1px 4px rgba(98,0,234,0.1); }
     }
@@ -208,14 +207,10 @@ const STEP_ORDER = ['researcher', 'writer', 'editor'];
       color: var(--ws-text-hint);
     }
     .draft-remove {
-      position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
       opacity: 0.3;
-      width: 32px !important;
-      height: 32px !important;
-      line-height: 32px;
+      flex-shrink: 0;
+      width: 28px !important;
+      height: 28px !important;
       &:hover { opacity: 1; }
     }
 
