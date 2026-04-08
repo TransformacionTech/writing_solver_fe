@@ -55,10 +55,3 @@ ehthumbs.db
 *.swo
 *~
 *.local
-
-# Claude Code
-/.claude
-CLAUDE.md
-
-# Specs internas
-/system_spec
