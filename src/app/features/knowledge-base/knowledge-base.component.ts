@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +10,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
   selector: 'app-knowledge-base',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, MatButtonModule, MatIconModule, MatCardModule, MatProgressBarModule],
   templateUrl: './knowledge-base.component.html',
   styles: [`

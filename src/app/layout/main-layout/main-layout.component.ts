@@ -25,13 +25,15 @@ import { NotificationToastComponent } from '../../shared/components/notification
       display: flex;
       flex-direction: column;
       flex: 1;
+      min-width: 0;
       overflow: hidden;
       background: var(--ws-bg);
       transition: background-color 0.3s;
     }
     .main-content {
       flex: 1;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
       background: inherit;
     }
   `],

@@ -1,4 +1,5 @@
-import { Component, inject, signal, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, ElementRef, ViewChild, AfterViewChecked, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +14,7 @@ import { ChatMessage, PipelineEvent } from './models/writing-solver.model';
 @Component({
   selector: 'app-writing-solver',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     MatButtonModule,
@@ -217,6 +219,7 @@ export class WritingSolverComponent implements AfterViewChecked {
 
   private readonly solverService = inject(WritingSolverService);
   private readonly notificationService = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly messages = signal<ChatMessage[]>([]);
   readonly inputText = signal('');
@@ -272,7 +275,7 @@ export class WritingSolverComponent implements AfterViewChecked {
     this.addMessage('assistant', '**Iniciando pipeline...**\n\nLos agentes estan trabajando en tu post.');
 
     const { events$ } = this.solverService.runPipeline(tema);
-    events$.subscribe({
+    events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (event: PipelineEvent) => this.handlePipelineEvent(event),
       error: (err: Error) => {
         this.updateLastAssistantMessage(`**Error en el pipeline:**\n\n\`${err.message}\``);

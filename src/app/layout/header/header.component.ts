@@ -18,7 +18,10 @@ import { NotificationService } from '../../core/services/notification.service';
       background: var(--ws-surface);
       border-bottom: 1px solid var(--ws-border);
       box-shadow: 0 1px 3px var(--ws-shadow);
-      z-index: 100;
+      z-index: 200;
+      height: 64px;
+      min-height: 64px;
+      flex-shrink: 0;
       padding: 0 16px 0 8px;
       transition: background-color 0.3s, border-color 0.3s;
     }
@@ -99,9 +102,11 @@ export class HeaderComponent {
   protected readonly authService = inject(AuthService);
   protected readonly notificationService = inject(NotificationService);
 
-  getInitials(name: string): string {
+  getInitials(name: string | undefined | null): string {
+    if (!name) return '??';
     return name
       .split(' ')
+      .filter(w => w.length > 0)
       .map(w => w[0])
       .join('')
       .toUpperCase()

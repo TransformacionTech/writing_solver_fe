@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
   selector: 'app-topic-ideas',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   templateUrl: './topic-ideas.component.html',
   styles: [`
