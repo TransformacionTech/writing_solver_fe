@@ -2,12 +2,36 @@
 
 UI del sistema multi-agente de posts LinkedIn (Tech And Solve). Consume APIs y streaming SSE. NO contiene logica de negocio ni agentes.
 
+## Estrategia de ramas — LEER ANTES DE HACER CAMBIOS
+
+| Rama | Proposito | Backend apuntado |
+|---|---|---|
+| `main` | Ejecucion local con `ng serve` | `http://localhost:8000` via proxy |
+| `deploy` | Produccion en Render (build automatico) | `https://writing-solver-api.onrender.com` |
+
+**Reglas:**
+- Desarrollar en `main`. Cuando algo esta listo para produccion, hacer merge a `deploy`.
+- NUNCA poner URLs de produccion hardcodeadas en `main`.
+- NUNCA poner `localhost` en `deploy`.
+- Los archivos que difieren entre ramas son: `environment.ts`, `environment.prod.ts`, `proxy.conf.json`.
+
+### Archivos criticos por rama
+
+**`main` (local):**
+- `environment.ts` → `apiUrl: ''` (usa proxy), `githubClientId` de OAuth App local
+- `proxy.conf.json` → target `http://localhost:8000`
+
+**`deploy` (Render):**
+- `environment.prod.ts` → `apiUrl: 'https://writing-solver-api.onrender.com'`, `githubClientId` de OAuth App de produccion
+- `proxy.conf.json` → target `https://writing-solver-api.onrender.com` (usado solo en preview builds de Render)
+- `public/_redirects` → redirige toda ruta a `index.html` para SPA routing en Render
+
 ## Stack
 Angular 21.2 | Angular Material 21.2 | TypeScript 5.9 | RxJS 7.8 | ngx-markdown 21 + mermaid 11 | Vitest 4 | Prettier 3.8
 
 ## Comandos
-- `npm start` — dev server
-- `npm run build` — build produccion
+- `npm start` — dev server (usa `environment.ts` + proxy a localhost:8000)
+- `npm run build` — build produccion (usa `environment.prod.ts`)
 - `npm test` — tests con Vitest
 - `npm run watch` — build incremental dev
 
