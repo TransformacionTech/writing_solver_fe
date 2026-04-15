@@ -4,6 +4,7 @@
     <span class="subtitle">Ajustes del sistema</span>
   </div>
 
+  <!-- Apariencia -->
   <div class="settings-section">
     <div class="section-title">Apariencia</div>
     <div class="setting-item">
@@ -15,6 +16,106 @@
         <span class="setting-desc">Cambia la apariencia de la interfaz</span>
       </div>
       <mat-slide-toggle [checked]="themeService.isDark()" (change)="themeService.toggle()" color="primary" />
+    </div>
+  </div>
+
+  <!-- Suscriptores -->
+  <div class="settings-section">
+    <div class="section-title">Suscriptores de informes</div>
+
+    <div class="setting-item">
+      <div class="setting-icon">
+        <mat-icon>mail</mat-icon>
+      </div>
+      <div class="setting-info">
+        <span class="setting-label">Correos que reciben la curación cada 15 días</span>
+        <span class="setting-desc">Estos correos reciben el informe automático con los 3 posts sugeridos</span>
+      </div>
+    </div>
+
+    <div class="add-sub">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input
+          matInput
+          type="email"
+          [ngModel]="newEmail()"
+          (ngModelChange)="newEmail.set($event)"
+          (keyup.enter)="addSubscriber()"
+          placeholder="usuario@techandsolve.com"
+        />
+      </mat-form-field>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addSubscriber()"
+        [disabled]="!newEmail().trim() || addingSub()"
+      >
+        @if (addingSub()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>add</mat-icon>
+        }
+        Agregar
+      </button>
+    </div>
+
+    <div class="sub-list">
+      @for (sub of subscribers(); track trackBySubId($index, sub)) {
+        <div class="sub-chip">
+          <mat-icon>person</mat-icon>
+          <span class="sub-chip-email">{{ sub.email }}</span>
+          <span class="sub-chip-date">{{ sub.created_at | date:'dd/MM/yy' }}</span>
+        </div>
+      } @empty {
+        <span class="setting-desc" style="padding: 8px 0">Aún no hay suscriptores registrados.</span>
+      }
+    </div>
+  </div>
+
+  <!-- Test curación -->
+  <div class="settings-section">
+    <div class="section-title">Probar flujo de curación</div>
+
+    <div class="setting-item">
+      <div class="setting-icon">
+        <mat-icon>auto_awesome</mat-icon>
+      </div>
+      <div class="setting-info">
+        <span class="setting-label">Disparo manual (testing)</span>
+        <span class="setting-desc">Ejecuta el flujo completo: búsqueda → curación → generación → envío</span>
+      </div>
+    </div>
+
+    <div class="test-area">
+      <div class="test-btn-row">
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="runTest()"
+          [disabled]="isTestRunning()"
+        >
+          @if (isTestRunning()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            <mat-icon>play_arrow</mat-icon>
+          }
+          {{ isTestRunning() ? 'Ejecutando...' : 'Ejecutar prueba' }}
+        </button>
+      </div>
+
+      <div class="log-panel">
+        @if (logs().length === 0) {
+          <div class="log-empty">El registro de ejecución aparecerá aquí...</div>
+        } @else {
+          @for (line of logs(); track trackByLogIdx($index)) {
+            <div class="log-line">
+              <span class="log-time">[{{ line.time }}]</span>
+              <span [class]="'log-level-' + line.level">{{ line.message }}</span>
+            </div>
+          }
+        }
+      </div>
     </div>
   </div>
 </div>
