@@ -55,3 +55,8 @@ ehthumbs.db
 *.swo
 *~
 *.local
+
+# Claude Code
+/.claude
+CLAUDE.md
+/system_spec

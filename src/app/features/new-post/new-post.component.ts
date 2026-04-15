@@ -789,6 +789,13 @@ export class NewPostComponent implements OnInit {
         break;
       }
 
+      case 'error':
+        this.phase.set('error');
+        this.abortPipeline = null;
+        this.notificationService.error(event.message ?? 'Error en el pipeline');
+        this.processLog.update(log => [...log, `[error] ${event.message ?? 'Error desconocido'}`]);
+        break;
+
       case 'done':
         if (this.phase() !== 'completed' && this.phase() !== 'error') {
           this.phase.set('completed');

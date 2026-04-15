@@ -303,6 +303,13 @@ export class WritingSolverComponent implements AfterViewChecked {
         this.notificationService.success(`Post generado con score ${event.score ?? '-'}/10`);
         break;
 
+      case 'error':
+        this.updateLastAssistantMessage(
+          `**Error en el pipeline:**\n\n${event.message ?? 'Error desconocido'}`,
+        );
+        this.notificationService.error(event.message ?? 'Error en el pipeline');
+        break;
+
       case 'done':
         break;
     }

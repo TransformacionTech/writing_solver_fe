@@ -8,5 +8,10 @@
     "target": "https://writing-solver-api.onrender.com",
     "secure": false,
     "changeOrigin": true
+  },
+  "/curation": {
+    "target": "https://writing-solver-api.onrender.com",
+    "secure": false,
+    "changeOrigin": true
   }
 }
