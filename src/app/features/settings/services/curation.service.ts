@@ -40,6 +40,10 @@ export class CurationService {
     return this.http.post<Subscriber>(`${this.apiUrl}/curation/subscribers`, { email });
   }
 
+  deleteSubscriber(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/curation/subscribers/${id}`);
+  }
+
   listRuns(limit = 10): Observable<CurationRun[]> {
     return this.http.get<CurationRun[]>(`${this.apiUrl}/curation/runs?limit=${limit}`);
   }

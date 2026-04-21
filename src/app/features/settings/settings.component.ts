@@ -103,6 +103,18 @@ interface LogLine {
     .sub-chip mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: var(--ws-primary); }
     .sub-chip-email { flex: 1; color: var(--ws-text); }
     .sub-chip-date { font-size: 0.72rem; color: var(--ws-text-muted); }
+    .sub-chip-delete {
+      width: 28px; height: 28px; padding: 0;
+      line-height: 28px;
+      margin-left: 4px;
+      color: var(--ws-text-muted);
+      transition: color 120ms ease;
+    }
+    .sub-chip-delete:hover:not([disabled]) { color: #ef4444; }
+    .sub-chip-delete mat-icon {
+      font-size: 1rem; width: 1rem; height: 1rem;
+      color: inherit;
+    }
 
     /* Test curation */
     .test-area {
@@ -149,6 +161,7 @@ export class SettingsComponent implements OnInit {
   readonly subscribers = signal<Subscriber[]>([]);
   readonly newEmail = signal('');
   readonly addingSub = signal(false);
+  readonly deletingId = signal<string | null>(null);
 
   readonly isTestRunning = signal(false);
   readonly logs = signal<LogLine[]>([]);
@@ -179,6 +192,26 @@ export class SettingsComponent implements OnInit {
         this.notify.error(err?.error?.detail ?? 'Error al agregar suscriptor');
       },
       complete: () => this.addingSub.set(false),
+    });
+  }
+
+  deleteSubscriber(sub: Subscriber): void {
+    if (this.deletingId()) return;
+    const ok = confirm(
+      `¿Eliminar a ${sub.email}?\nDejará de recibir la curación cada 15 días.`,
+    );
+    if (!ok) return;
+
+    this.deletingId.set(sub.id);
+    this.curationService.deleteSubscriber(sub.id).subscribe({
+      next: () => {
+        this.subscribers.update(list => list.filter(s => s.id !== sub.id));
+        this.notify.success('Suscriptor eliminado');
+      },
+      error: (err) => {
+        this.notify.error(err?.error?.detail ?? 'Error al eliminar suscriptor');
+      },
+      complete: () => this.deletingId.set(null),
     });
   }
 

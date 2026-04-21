@@ -66,6 +66,20 @@
           <mat-icon>person</mat-icon>
           <span class="sub-chip-email">{{ sub.email }}</span>
           <span class="sub-chip-date">{{ sub.created_at | date:'dd/MM/yy' }}</span>
+          <button
+            mat-icon-button
+            type="button"
+            class="sub-chip-delete"
+            aria-label="Eliminar suscriptor"
+            [disabled]="deletingId() === sub.id"
+            (click)="deleteSubscriber(sub)"
+          >
+            @if (deletingId() === sub.id) {
+              <mat-spinner diameter="18" />
+            } @else {
+              <mat-icon>close</mat-icon>
+            }
+          </button>
         </div>
       } @empty {
         <span class="setting-desc" style="padding: 8px 0">Aún no hay suscriptores registrados.</span>
